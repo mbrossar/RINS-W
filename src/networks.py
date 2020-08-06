@@ -70,7 +70,7 @@ class IMUNet(torch.nn.Module):
 class BBBNet(torch.nn.Module):
     """Compute velocity measurement covariance from IMU input"""
 
-    def __init__(self, zupt_forward_std, lat_std, up_std, init_mode):
+    def __init__(self, zupt_forward_std, lat_std, up_std):
         super(BBBNet, self).__init__()
         min_std = torch.Tensor([0.01])
         self.min_std = torch.nn.Parameter(min_std, requires_grad=False)
@@ -84,18 +84,10 @@ class BBBNet(torch.nn.Module):
         self.cov_bias.data[1] = lat_std
         self.cov_bias.data[2] = up_std
         
-        if init_mode == "JointLab":
-            self.cov_lin.weight.data[1, 2] =  0.5
-            self.cov_lin.weight.data[2, 1] =  9
-        if init_mode == "Kaist":
-            self.cov_lin.weight.data[2, 0] = 0.5
-            self.cov_lin.weight.data[2, 1] = 10
-            self.cov_lin.weight.data[2, 2] = 1
-            self.cov_lin.weight.data[1, 2] =  1
-        if init_mode == "Lille":
-            self.cov_lin.weight.data[1, 2] =  0.5
-            self.cov_lin.weight.data[2, 1] =  9
-
+        self.cov_lin.weight.data[2, 0] = 0
+        self.cov_lin.weight.data[2, 1] = 0
+        self.cov_lin.weight.data[2, 2] = 0
+        self.cov_lin.weight.data[1, 2] =  0
 
     def forward(self, us):
         us = us[:, :, :6]

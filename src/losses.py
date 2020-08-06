@@ -2,7 +2,6 @@ import torch
 import numpy as np
 from src.utils import bmmt, bmv, bmtv, bbmv, bmtm, pltt
 from src.lie_algebra import SO3
-import matplotlib.pyplot as plt
 
 
 class VLoss(torch.nn.Module):

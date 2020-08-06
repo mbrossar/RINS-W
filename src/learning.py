@@ -257,14 +257,13 @@ class BaseProcessing:
             }
             pdump(mondict, self.address, seq, 'results.p')
 
-    def display_test(self, dataset, mode):
+    def display_test(self, dataset_class, dataset_params, mode):
         raise NotImplementedError
     
     def get_results(self, seq):
         return pload(self.address, seq, 'results.p')['hat_xs']
     
-    def convert(self):
-        pass
+
 
     @property
     def end_title(self):
@@ -285,8 +284,8 @@ class ZUPTProcessing(BaseProcessing):
     def __init__(self, res_dir, tb_dir, net_class, net_params, address, dt):
         super().__init__(res_dir, tb_dir, net_class, net_params, address, dt)
 
-    def display_test(self, dataset, mode):
-        
+    def display_test(self, dataset_class, dataset_params, mode):
+        dataset = dataset_class(**dataset_params, mode=mode)
         zupts = torch.zeros(0)
         hat_zupts = torch.zeros(0)
 
@@ -306,7 +305,6 @@ class ZUPTProcessing(BaseProcessing):
             self.zupt_plot()
             zupts = torch.cat((zupts, self.zupt))
             hat_zupts = torch.cat((hat_zupts, self.hat_zupt))
-            #self.print_and_save_seq(err)
             
         zupts = zupts.numpy()
         hat_zupts = hat_zupts.numpy()
@@ -365,7 +363,7 @@ class ZUPTProcessing(BaseProcessing):
         
     def print_and_save_auc(self, auc):
         print('')
-        print('AUC: {:.5f}'.format(auc))
+        print('Area Under Curve (AUC): {:.5f}'.format(auc))
 
         mondict = {
             "auc": auc.item(),

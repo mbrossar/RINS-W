@@ -10,7 +10,6 @@ import pickle
 import os
 import torch
 import sys
-import navpy
 
 
 class BaseDataset(Dataset):
@@ -144,25 +143,6 @@ class BaseDataset(Dataset):
 
     def read_data(self, data_dir):
         raise NotImplementedError
-
-    @staticmethod
-    def interpolate(x, t, t_int):
-            """
-            Interpolate ground truth at the sensor timestamps
-            """
-
-            # vector interpolation
-            x_int = np.zeros((t_int.shape[0], x.shape[1]))
-            for i in range(x.shape[1]):
-                if i in [4, 5, 6, 7]:
-                    continue
-                x_int[:, i] = np.interp(t_int, t, x[:, i])
-            # quaternion interpolation
-            t_int = torch.Tensor(t_int - t[0])
-            t = torch.Tensor(t - t[0])
-            qs = SO3.qnorm(torch.Tensor(x[:, 4:8]))
-            x_int[:, 4:8] = SO3.qinterp(qs, t, t_int).numpy()
-            return x_int
         
     def get_test(self, i):
         input_dict = self.load_seq(i)
@@ -185,8 +165,6 @@ class KaistDataset(BaseDataset):
         super().__init__(predata_dir, train_seqs, val_seqs, test_seqs, mode, dt)
         # convert raw data to pre loaded data
         self.read_data(data_dir)
-    
-    #TODO add noise on mag
 
     def read_data(self, data_dir):
         r"""Read the data from the dataset"""
@@ -269,6 +247,7 @@ class KaistDataset(BaseDataset):
             ts = (t - t0)/time_factor
             p_gt = torch.Tensor(p_gt)
             rpys = torch.Tensor(rpys).float()
+            q_gt = SO3.to_quaternion(SO3.from_rpy(rpys[:, 0], rpys[:, 1], rpys[:, 2]))
             imu = torch.Tensor(imu).float()
 
             # take IMU gyro and accelerometer and magnetometer
@@ -303,5 +282,3 @@ class KaistDataset(BaseDataset):
                 'ps': p_gt.float(),
             }
             pdump(mondict, self.predata_dir, sequence + "_gt.p")
-
-
