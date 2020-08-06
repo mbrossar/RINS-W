@@ -1,0 +1,14 @@
+c0: 16
+dropout: 0.1
+ds:
+- 4
+- 4
+- 4
+in_dim: 9
+ks:
+- 7
+- 7
+- 7
+- 7
+momentum: 0.1
+out_dim: 1

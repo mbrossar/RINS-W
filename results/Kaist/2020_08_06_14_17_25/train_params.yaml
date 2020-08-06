@@ -1,0 +1,23 @@
+dataloader:
+  batch_size: 1
+  num_workers: 0
+  pin_memory: false
+  shuffle: false
+freq_val: 10
+loss:
+  n0: 448
+  pos_weight: 7
+  w: 100.0
+loss_class: !!python/name:src.losses.VLoss ''
+n_epochs: 3600
+optimizer:
+  lr: 0.01
+  weight_decay: 0.01
+optimizer_class: !!python/name:torch.optim.adam.Adam ''
+res_dir: "/home/mines/T\xE9l\xE9chargements/EntrainementDeepVehicle/results/Kaist"
+scheduler:
+  T_0: 600
+  T_mult: 2
+  eta_min: 0.0001
+scheduler_class: !!python/name:torch.optim.lr_scheduler.CosineAnnealingWarmRestarts ''
+tb_dir: "/home/mines/T\xE9l\xE9chargements/EntrainementDeepVehicle/results/runs/Kaist"
