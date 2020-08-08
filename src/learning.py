@@ -18,9 +18,9 @@ import shutil
 from torch.utils.tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from src.utils import pload, pdump, yload, ydump, mkdir, bmv
-from src.utils import bmtm, bmtv, bmmt, pltt, plts, axat, pltt, plts
+from src.utils import bmtm, bmtv, bmmt, axat
 from datetime import datetime
-from src.lie_algebra import SO3, CPUSO3
+from src.lie_algebra import SO3
 from src.iekf import RecorderIEKF as IEKF
 from sklearn.metrics import precision_recall_curve, roc_curve, roc_auc_score
 
@@ -239,7 +239,6 @@ class BaseProcessing:
         for mode in modes:
             dataset = dataset_class(**dataset_params, mode=mode)
             self.loop_test(dataset, criterion)
-            self.display_test(dataset_class, dataset_params, mode)
 
     def loop_test(self, dataset, criterion):
         """Forward loop over test data"""
@@ -290,7 +289,7 @@ class ZUPTProcessing(BaseProcessing):
         hat_zupts = torch.zeros(0)
 
         for i, seq in enumerate(dataset.sequences):
-            print('\n', '---------  Result for sequence ' + seq + '  ---------')
+            print('\n', 'Compute result for sequence ' + seq)
             self.seq = seq
             # get ground truth pose
             self.gt = dataset.load_gt(i)
@@ -386,6 +385,8 @@ class KalmanProcessing(BaseProcessing):
             seq = dataset.sequences[i]
             print('Testing sequence ' + seq + ' (mode is ' + dataset.mode + ')')
             ts, us, Nshift = dataset.get_test(i)
+            if seq == 'urban16':
+                Nshift += 3000
             kf = IEKF(**self.iekf_params)
             zupts = torch.sigmoid(self.get_results(seq))
             us, zupts, covs = kf.nets2iekf(self.net, us, Nshift, zupts)
@@ -396,7 +397,7 @@ class KalmanProcessing(BaseProcessing):
     def display_test(self, dataset_class, dataset_params, mode):
         dataset = dataset_class(**dataset_params, mode=mode)
         for i, seq in enumerate(dataset.sequences):
-            print('\n', '---------  Result for sequence ' + seq + '  ---------')
+            print('\n', 'compute result for sequence ' + seq)
             self.seq = seq
             # get ground truth pose
             self.gt = dataset.load_gt(i)

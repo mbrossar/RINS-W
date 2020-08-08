@@ -1,4 +1,4 @@
-from src.utils import pdump, pload, bmtv, bmtm, bmv, pltt, plts
+from src.utils import pdump, pload, bmtv, bmtm, bmv
 from src.lie_algebra import SO3
 from termcolor import cprint
 from torch.utils.data.dataset import Dataset
@@ -79,9 +79,6 @@ class BaseDataset(Dataset):
         self._train = False
         self._val = True
 
-    def length(self):
-        return self._length
-
     def load_seq(self, i):
         return pload(self.predata_dir, self.sequences[i] + '.p')
 
@@ -95,7 +92,7 @@ class BaseDataset(Dataset):
 
         path = os.path.join(self.predata_dir, train_seqs[0] + '.p')
         if not os.path.exists(path):
-            print("init_normalize_factors not computed")
+            print("init_normalize_factors not computed (just restart)")
             return 0, 0
 
         print('Start computing normalizing factors ...')
@@ -143,13 +140,16 @@ class BaseDataset(Dataset):
 
     def read_data(self, data_dir):
         raise NotImplementedError
-        
+
     def get_test(self, i):
         input_dict = self.load_seq(i)
-        gt_zupts = input_dict['xs'][:, 0]
+        gt_zupts = input_dict['xs'][:, 0].unsqueeze(0).unsqueeze(0)
         us = input_dict['us']
-        gt_zupts[0] = 0
-        Nshift = torch.where(gt_zupts == 1)[0][0]
+
+        # start after at least 5s stop
+        weight = torch.ones(1, 1, 1000)/999
+        gt_zupts = torch.nn.functional.conv1d(gt_zupts, weight).squeeze()
+        Nshift = torch.where(gt_zupts >= 1)[0][0]
         N = us.shape[0] - Nshift
         ts = torch.linspace(0, (N-1)*self.dt, N)
         return ts, us, Nshift
@@ -181,7 +181,6 @@ class KaistDataset(BaseDataset):
             path_imu = os.path.join(data_dir, seq, "sensor_data",
                 "xsens_imu.csv")
             path_gt = os.path.join(data_dir, seq, "global_pose.csv")
-            # path_odo = os.path.join(data_dir, seq, "encoder.csv")
             return path_imu, path_gt
 
         time_factor = 1e9  # ns -> s
@@ -268,7 +267,7 @@ class KaistDataset(BaseDataset):
             # set ground truth consistent with ZUPT
             v_gt[zupts.squeeze() == 1] = 0
 
-            # save for all training
+            # save for training
             mondict = {
                 'xs': zupts.float(),
                 'us': imu.float(),

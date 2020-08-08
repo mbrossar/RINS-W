@@ -54,6 +54,17 @@ If you use this code in your research, please cite:
   pages={2068-2075},
   }
 
+@ARTICLE{9035481,
+  author={M. {Brossard} and A. {Barrau} and S. {Bonnabel}},
+  journal={IEEE Transactions on Intelligent Vehicles}, 
+  title={{AI-IMU Dead-Reckoning}}, 
+  year={2020},
+  volume={},
+  number={},
+  pages={},
+  }
+
+
 ```
 
 ### Authors

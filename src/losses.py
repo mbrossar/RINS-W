@@ -1,12 +1,12 @@
 import torch
 import numpy as np
-from src.utils import bmmt, bmv, bmtv, bbmv, bmtm, pltt
+from src.utils import bmmt, bmv, bmtv, bbmv, bmtm
 from src.lie_algebra import SO3
 
 
 class VLoss(torch.nn.Module):
 
-    def __init__(self, w, pos_weight, n0):
+    def __init__(self, w=1, pos_weight=1, n0=0):
         super().__init__()
         # weights on different loss
         # pos_weight is weight of positive examples
